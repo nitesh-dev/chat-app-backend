@@ -4,9 +4,11 @@ import http from 'http'
 import cors from 'cors'
 import { Database } from "./Database.js";
 import { repeat } from "./Utils.js";
+
 //database 
 const db = new Database("app.db")
 await db.init()
+
 //express 
 const app = express();
 app.use(cors())
@@ -15,6 +17,7 @@ app.use(express.json())
 const server = http.createServer(app);
 handlePost()
 handleGet()
+
 // start the http server
 server.listen(3000, () => {
     console.log('listening on :3000');
@@ -26,6 +29,7 @@ function handleGet() {
         res.send('Chat server is running')
     })
 } 
+
 function handlePost() {
     app.post('/login', async (req, res) => {
         /** 

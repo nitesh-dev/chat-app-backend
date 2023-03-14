@@ -5,6 +5,7 @@ export class Database {
     constructor(filename: string) {
         this.db = this.createDb(filename)
     }
+
     async verifyAccount(phone: number, password: string) {
         try {
             const data = await this.allSql(
@@ -15,6 +16,7 @@ export class Database {
         }
 
     }
+
     async addUser(phone: number, password: string) {
         try {
             await this.runSql(
@@ -23,16 +25,20 @@ export class Database {
         } catch (error) {
         }
     }
+
     async getChats(phone: number, phoneFriend: number) {
 
     }
+
     async readTable(tableName: string = "users") {
         return await this.allSql(`select * from ${tableName};`)
     }
+
     private createDb(filename: string) {
         sqlite3.verbose()
         return new sqlite3.Database(filename)
     }
+
     async init() {
         //create users table
         await this.runSql(
@@ -47,6 +53,7 @@ export class Database {
             `create table if not  exists friends(id integer primary key, me integer ,friend integer);`
         )
     }
+
     private async runSql(sql: string) {
         return new Promise<void>((resolve, reject) => {
             this.db.run(sql, function (err) {
@@ -55,6 +62,7 @@ export class Database {
             })
         });
     }
+    
     private async allSql(sql: string) {
         return new Promise<any[]>((resolve, reject) => {
             this.db.all(sql, function (err, rows) {
