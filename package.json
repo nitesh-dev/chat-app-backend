@@ -4,7 +4,7 @@
   "description": "",
   "main": "main.js",
   "scripts": {
-    "dev": " tsc --watch  & nodemon out/Main.js --ignore temp"
+    "dev": "nodemon out/Main.js --ignore temp"
   },
   "keywords": [],
   "author": "",
