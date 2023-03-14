@@ -9,3 +9,20 @@ export function repeat(n, callback: (i: number) => void) {
         callback(i)
     }
 }
+
+export interface DatabaseResponse{
+    status: Status,
+    data: any,
+    error: string
+}
+
+export enum Status{
+    Ok = 200,
+    Forbidden = 404,
+}
+
+export enum MessageStatus{
+    NotSeen = 10,
+    Seen = 11,
+    NotReached = 12
+}

@@ -1,38 +1,72 @@
 import sqlite3 from "sqlite3";
-
+import { DatabaseResponse, Status } from "./Utils.js";
+sqlite3.verbose()
 export class Database {
     db: sqlite3.Database
     constructor(filename: string) {
         this.db = this.createDb(filename)
     }
 
-    async verifyAccount(phone: number, password: string) {
-        try {
-            const data = await this.allSql(
-                `select * from users where password=${password} and phone=${phone};`
-            )
-        } catch (error) {
 
-        }
+    // -------------------------------------------- account Handler ----------------------------
 
-    }
+    async isAccountExist(phone: number, password: string) {
 
-    async addUser(phone: number, password: string) {
-        try {
-            await this.runSql(
-                `insert  into users(phone,password) values(${phone},${password});`
-            )
-        } catch (error) {
+        const data = await this.allSql(`SELECT * FROM users WHERE password='${password}' AND phone=${phone} LIMIT 1`)
+
+        if (data.length == 0) {
+            return false
+        } else {
+            return true
         }
     }
 
-    async getChats(phone: number, phoneFriend: number) {
-
+    async addAccount(phone: number, password: string) {
+        await this.runSql(`INSERT INTO users (password, phone) VALUES ('${password}', ${phone})`)
     }
 
-    async readTable(tableName: string = "users") {
-        return await this.allSql(`select * from ${tableName};`)
+
+
+    // --------------------------------------- Chat Handler -----------------------
+
+    // chats table handler code
+    async getChats(myNumber: number, friendNumber: number) {
+        return this.allSql(`SELECT * FROM chats WHERE sender=${myNumber} AND receiver=${friendNumber} OR sender=${friendNumber} AND receiver=${myNumber}`)
     }
+
+    async addChat(senderNumber: number, receiverNumber: number, message: string, time: string, status: number){
+        await this.runSql(`INSERT INTO chats (sender, receiver, message, time, status) VALUES (${senderNumber}, ${receiverNumber}, '${message}', '${time}', ${status})`)
+    }
+
+    async removeChat(id: number){
+        await this.runSql(`DELETE FROM chats WHERE id=${id}`)
+    }
+
+
+    //-------------------------------------------- Friend Table Handler --------------------
+
+    // friends table handler code
+    async getAllFriends(myNumber: number){
+        return await this.allSql(`SELECT (friend_number) FROM friends WHERE my_number=${myNumber}`)
+    }
+
+    async isFriendExist(myNumber: number, friendNumber: number){
+        const friends = await this.allSql(`SELECT * FROM friends WHERE my_number=${myNumber} AND friend_number=${friendNumber} LIMIT 1`)
+        if(friends.length == 0) return false
+        return true
+    }
+
+    async addFriend(myNumber: number, friendNumber: number){
+        await this.runSql(`INSERT INTO friends (my_number, friend_number) VALUES (${myNumber}, ${friendNumber})`)
+    }
+
+    async removeFriend(myNumber: number, friendNumber: number){
+        await this.runSql(`DELETE FROM friends WHERE my_number=${myNumber} AND friend_number=${friendNumber}`)
+    }
+    
+
+
+    // extra
 
     private createDb(filename: string) {
         sqlite3.verbose()
@@ -46,11 +80,11 @@ export class Database {
         )
         //create chats table
         await this.runSql(
-            `create table if not  exists chats(id integer primary key, sender integer ,receiver integer, message text);`
+            `create table if not  exists chats(id integer primary key, sender integer ,receiver integer, message text, time text, status integer);`
         )
         //create friends table
         await this.runSql(
-            `create table if not  exists friends(id integer primary key, me integer ,friend integer);`
+            `create table if not  exists friends(id integer primary key, my_number integer ,friend_number integer);`
         )
     }
 
@@ -62,7 +96,7 @@ export class Database {
             })
         });
     }
-    
+
     private async allSql(sql: string) {
         return new Promise<any[]>((resolve, reject) => {
             this.db.all(sql, function (err, rows) {
